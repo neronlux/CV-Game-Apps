@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+android/app/build/
+android/.gradle/
+android/build/
+*.apk
+*.aab
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Capacitor generated (keep android/ but ignore build artifacts)
+android/app/src/main/assets/public/
+
+# Environment & secrets
+.env
+.env.local
+*.keystore
+*.jks
+upload.keystore
+keystore.properties
+signing.properties
+
+# Misc
+*.tar.gz
+*.log
