@@ -3,7 +3,7 @@ import { useGameState } from "../lib/stores/useGameState";
 import { useAudio } from "../lib/stores/useAudio";
 import { useIsMobile } from "../hooks/use-is-mobile";
 import { gameData } from "../data/gameData";
-import { triggerImpact, triggerNotification } from "../lib/capacitor";
+import { triggerImpact, triggerNotification, getPref, setPref } from "../lib/capacitor";
 
 export type StatusEffectType =
   | "caffeinated"
@@ -79,10 +79,22 @@ const GameCanvas: React.FC = () => {
   const lastTouchTimeRef = useRef(0);
   const resizeFrameRef = useRef<number>();
   const [highScore, setHighScore] = useState(() => {
-    const storedScore = window.localStorage.getItem(HIGH_SCORE_KEY);
-    return storedScore ? Number.parseInt(storedScore, 10) || 0 : 0;
+    try {
+      return Number.parseInt(localStorage.getItem(HIGH_SCORE_KEY) || "0", 10) || 0;
+    } catch {
+      return 0;
+    }
   });
   const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    getPref(HIGH_SCORE_KEY).then((stored) => {
+      if (stored) {
+        const parsed = Number.parseInt(stored, 10) || 0;
+        setHighScore((prev) => Math.max(prev, parsed));
+      }
+    });
+  }, []);
   const {
     currentLevel,
     gamePhase,
@@ -99,7 +111,17 @@ const GameCanvas: React.FC = () => {
     continuePlaying,
     levelTransitionStartTime,
   } = useGameState();
-  const { playHit, playExplosion, playSuccess } = useAudio();
+  const {
+    playHit,
+    playExplosion,
+    playSuccess,
+    playCombo,
+    playBoss,
+    playBossDefeat,
+    initializeAudio,
+    playBackgroundMusic,
+    pauseBackgroundMusic,
+  } = useAudio();
   const isMobile = useIsMobile();
 
   // Orientation detection
@@ -219,12 +241,17 @@ const GameCanvas: React.FC = () => {
       return;
     }
 
+    pauseBackgroundMusic();
+
     const finalScore = Math.floor(gameStateRef.current.score);
-    if (finalScore > highScore) {
-      window.localStorage.setItem(HIGH_SCORE_KEY, String(finalScore));
-      setHighScore(finalScore);
-    }
-  }, [gamePhase, highScore]);
+    setHighScore((prev) => {
+      if (finalScore > prev) {
+        setPref(HIGH_SCORE_KEY, String(finalScore));
+        return finalScore;
+      }
+      return prev;
+    });
+  }, [gamePhase, pauseBackgroundMusic]);
 
   useEffect(() => {
     if (gamePhase !== "playing") {
@@ -465,6 +492,8 @@ const GameCanvas: React.FC = () => {
 
       if (gamePhase === "ready") {
         startGame();
+        initializeAudio();
+        playBackgroundMusic();
         return;
       }
       if (gamePhase === "level-transition") {
@@ -553,6 +582,8 @@ const GameCanvas: React.FC = () => {
       levelTransitionStartTime,
       isMobile,
       resetGame,
+      initializeAudio,
+      playBackgroundMusic,
     ]
   );
 
@@ -2372,7 +2403,7 @@ const GameCanvas: React.FC = () => {
                   state.combo === 15 ||
                   state.combo === 20
                 ) {
-                  playSuccess();
+                  playCombo(state.combo);
                 }
 
                 const points = 100 * state.scoreMultiplier * state.comboMultiplier;
@@ -2518,6 +2549,7 @@ const GameCanvas: React.FC = () => {
               } else if (obj.enemyType === "zombie") {
                 if (Date.now() - gameStateRef.current.lastZombieDrainTime > 500) {
                   gameStateRef.current.lastZombieDrainTime = Date.now();
+                  playHit();
                   loseSanity(2);
                   spawnFloatingText(player.x, player.y - 40, "-Sanity", "#0F0");
                 }
@@ -2803,6 +2835,7 @@ const GameCanvas: React.FC = () => {
             gameStateRef.current.bossAppeared = true;
             gameStateRef.current.bossHP = bossData.hp;
             gameStateRef.current.bossMaxHP = bossData.hp;
+            playBoss();
             gameStateRef.current.boss = {
               name: bossData.name,
               color: bossData.color,
@@ -2889,6 +2922,7 @@ const GameCanvas: React.FC = () => {
             gameStateRef.current.boss = null;
 
             triggerNotification("success"); // Strong haptic + vibration on boss defeat
+            playBossDefeat();
 
             // Boss defeat rewards
             addScore(500);
@@ -3036,6 +3070,9 @@ const GameCanvas: React.FC = () => {
       playHit,
       playExplosion,
       playSuccess,
+      playCombo,
+      playBoss,
+      playBossDefeat,
       nextLevel,
       startLevelTransition,
       endGame,
@@ -3089,6 +3126,8 @@ const GameCanvas: React.FC = () => {
       if (e.code === "Enter" && gamePhase === "ready") {
         e.preventDefault();
         startGame();
+        initializeAudio();
+        playBackgroundMusic();
         return;
       }
 
@@ -3096,6 +3135,8 @@ const GameCanvas: React.FC = () => {
         e.preventDefault();
         if (gamePhase === "ready") {
           startGame();
+          initializeAudio();
+          playBackgroundMusic();
         }
         if (gamePhase === "playing") {
           if (gameStateRef.current.bossActive && e.code === "Space") {

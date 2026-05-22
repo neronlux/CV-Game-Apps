@@ -19,7 +19,7 @@ Play through 7 real companies from Nathan Luxford's 15+ year journey in enterpri
 - React 18 + TypeScript + Vite
 - Zustand for state
 - Tailwind CSS
-- Capacitor (Android) — coming in next phase
+- Capacitor (Android native)
 
 ## Project Goals
 
@@ -45,7 +45,7 @@ npx cap open android
 
 ## Audio Licensing
 
-See `CREDITS.md` — background music and explosion SFX currently bundled from original CDN. These **must** have commercial redistribution rights confirmed (or be replaced) before Play Store submission.
+See `CREDITS.md` — background music and explosion SFX are bundled locally in `public/sounds/`. Licensing **must** be confirmed (or assets replaced) before Play Store submission.
 
 ## Links
 
