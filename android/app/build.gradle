@@ -6,7 +6,7 @@ android {
 
     // Load signing configuration from keystore.properties (same pattern as Warm-Up-Senpai)
     def keystoreProperties = new Properties()
-    def keystorePropertiesFile = rootProject.file('../keystore.properties')
+    def keystorePropertiesFile = rootProject.file('keystore.properties')
     if (keystorePropertiesFile.exists()) {
         keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
     }
@@ -21,13 +21,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(21)
         }
     }
 
