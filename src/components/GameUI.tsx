@@ -38,7 +38,7 @@ const GameUI: React.FC = () => {
     <div className="pointer-events-none absolute inset-0 z-10">
       {/* Top Right Controls (Audio + Visit Site) */}
       <div
-        className={`absolute ${isMobile ? (isVerySmall ? "right-1 top-1" : "right-2 top-2") : "right-4 top-4"} pointer-events-auto flex gap-2`}
+        className={`absolute ${isMobile ? (isVerySmall ? "top-1 right-1" : "top-2 right-2") : "top-4 right-4"} pointer-events-auto flex gap-2`}
       >
         {/* Audio Button */}
         <button
@@ -70,7 +70,7 @@ const GameUI: React.FC = () => {
 
       {/* Audio Panel (simple dropdown) */}
       {showAudioPanel && (
-        <div className="pointer-events-auto absolute right-4 top-16 z-20 w-64 rounded-lg border border-white/20 bg-black/90 p-4 text-white">
+        <div className="pointer-events-auto absolute top-16 right-4 z-20 w-64 rounded-lg border border-white/20 bg-black/90 p-4 text-white">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Audio Settings</span>
@@ -114,7 +114,7 @@ const GameUI: React.FC = () => {
       {/* Mobile Controls Help */}
       {(isMobile || isTablet) && (
         <div
-          className={`absolute ${isVerySmall ? "bottom-1 right-1" : "bottom-2 right-2"} pointer-events-auto`}
+          className={`absolute ${isVerySmall ? "right-1 bottom-1" : "right-2 bottom-2"} pointer-events-auto`}
         >
           <button
             onClick={() => setShowControls(!showControls)}
@@ -124,7 +124,7 @@ const GameUI: React.FC = () => {
             {showControls ? "✕" : "?"}
           </button>
           {showControls && (
-            <div className="absolute bottom-12 right-0 max-w-[180px] rounded border border-white/20 bg-black/80 p-3 text-xs text-white">
+            <div className="absolute right-0 bottom-12 max-w-[180px] rounded border border-white/20 bg-black/80 p-3 text-xs text-white">
               <p>
                 <strong>Touch &amp; Hold:</strong> Fly Up
               </p>

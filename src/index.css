@@ -1,8 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Game-specific mobile optimizations (ported from source) */
+@theme {
+  --radius: 0.5rem;
+  --border-radius-lg: var(--radius);
+  --border-radius-md: calc(var(--radius) - 2px);
+  --border-radius-sm: calc(var(--radius) - 4px);
+}
+
 :root {
   --vh: 1vh;
 }
@@ -19,20 +23,17 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Prevent pull-to-refresh and overscroll */
 html,
 body {
   overscroll-behavior: none;
 }
 
-/* Canvas optimizations */
 canvas {
   display: block;
   touch-action: none;
   outline: none;
 }
 
-/* Safe area handling for notched devices */
 @supports (padding: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
