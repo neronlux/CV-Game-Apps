@@ -23,8 +23,6 @@ android/app/src/main/assets/public/
 .env
 .env.local
 *.keystore
-*.jks
-upload.keystore
 keystore.properties
 signing.properties
 
