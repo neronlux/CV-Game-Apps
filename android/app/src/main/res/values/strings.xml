@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Nathan\'s Career Game</string>
     <string name="title_activity_main">Nathan\'s Career Game</string>
-    <string name="package_name">com.nathanluxford.careergame</string>
-    <string name="custom_url_scheme">com.nathanluxford.careergame</string>
+    <string name="package_name">com.career.rocketride</string>
+    <string name="custom_url_scheme">com.career.rocketride</string>
 </resources>

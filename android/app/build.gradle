@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.nathanluxford.careergame"
+    namespace = "com.career.rocketride"
     compileSdk = rootProject.ext.compileSdkVersion
 
     // Load signing configuration from keystore.properties (same pattern as Warm-Up-Senpai)
@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.nathanluxford.careergame"
+        applicationId "com.career.rocketride"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

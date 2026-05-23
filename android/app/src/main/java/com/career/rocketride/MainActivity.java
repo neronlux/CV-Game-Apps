@@ -1,4 +1,4 @@
-package com.nathanluxford.careergame;
+package com.career.rocketride;
 
 import com.getcapacitor.BridgeActivity;
 

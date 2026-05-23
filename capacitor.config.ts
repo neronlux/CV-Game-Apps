@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.nathanluxford.careergame',
+  appId: 'com.career.rocketride',
   appName: "Nathan's Career Game",
   webDir: 'dist',
   server: {
