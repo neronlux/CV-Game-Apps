@@ -94,32 +94,76 @@ src/
 
 - Landscape is locked both statically (AndroidManifest) and at runtime
 - Status bar is hidden for immersive gameplay
-- Back button pauses the game instead of exiting immediately
+- Back button pauses the game; double-press within 2s exits the app
+- Screen stays awake during gameplay (`@capacitor-community/keep-awake`)
+- App auto-pauses + mutes audio on background/visibility change
+- Haptic feedback on all game events and UI buttons
 - Package name: `com.career.rocketride`
 
-## Building a Signed AAB
+## Release Process
+
+### Version numbering
+
+Version is tracked in `android/app/build.gradle`:
+- `versionCode` — incrementing integer (1, 2, 3...). Must be higher than the previous Play Console upload.
+- `versionName` — human-readable string ("1.0", "2.0", "3.0"...).
+
+**Always bump both before building a release AAB.**
+
+### Full release workflow
 
 ```bash
-# 1. Sync web assets to Android project
+# 1. Bump version in android/app/build.gradle (versionCode + versionName)
+
+# 2. Run quality gates
+npm run check && npm run lint && npm run format:check
+
+# 3. Commit and push
+git add -A && git commit -m "Release vN.N" && git push origin main
+
+# 4. Wait for CI to pass
+gh run list --limit 1
+
+# 5. Sync web assets
 npm run cap:sync
 
-# 2. Build the signed release AAB
+# 6. Build signed release AAB
+./android/gradlew -p android --stop
+rm -rf android/app/build
 ./android/gradlew -p android clean bundleRelease
 ```
 
-Output: `android/app/build/outputs/bundle/release/app-release.aab`
+### Upload to Play Console
+
+Three files to upload per release:
+
+| File | Path | Where in Play Console |
+|---|---|---|
+| **AAB** | `android/app/build/outputs/bundle/release/app-release.aab` | Internal testing → Create release → Upload |
+| **Deobfuscation** | `android/app/build/outputs/mapping/release/mapping.txt` | "Upload deobfuscation file" under the release |
+| **Native debug symbols** | N/A — no native code, skip this warning | — |
+
+After upload:
+1. Add release notes
+2. Review release → Save → Roll out to Internal Testing
 
 ### Signing details
-- Keystore: `android/app/upload-keystore.jks` (shared with Warm-Up-Senpai, backed up in repo)
+- See `SIGNING_KEYS.md` for both keystore details and how to switch between them
+- Active key: `android/app/upload-keystore.jks` (Warm-Up-Senpai shared key)
 - Credentials: stored in `android/keystore.properties` (gitignored)
-- Alias: `upload`
 - Java version: **21** required (Capacitor 8.x targets Java 21)
 - `android/gradle.properties` sets `org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64`
+
+### R8 / ProGuard
+- `minifyEnabled true` is set in the release build
+- Rules in `android/app/proguard-rules.pro` keep Capacitor/WebView classes intact
+- The mapping file (`mapping.txt`) must be uploaded to Play Console for crash analysis
 
 ### Troubleshooting
 - **"invalid source release: 21"** → ensure `gradle.properties` points to Java 21
 - **NullPointerException in signReleaseBundle** → check `keystore.properties` path in `build.gradle` resolves correctly
 - **Wrong package name** → update `capacitor.config.ts` appId, `build.gradle` namespace + applicationId, `strings.xml`, and Java package directory
+- **CI fails with ERESOLVE** → `npm ci` is strict; use `--legacy-peer-deps` locally but ensure `package.json` has compatible versions
 
 ## Git & Commits
 
