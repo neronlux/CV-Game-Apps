@@ -95,6 +95,31 @@ src/
 - Landscape is locked both statically (AndroidManifest) and at runtime
 - Status bar is hidden for immersive gameplay
 - Back button pauses the game instead of exiting immediately
+- Package name: `com.career.rocketride`
+
+## Building a Signed AAB
+
+```bash
+# 1. Sync web assets to Android project
+npm run cap:sync
+
+# 2. Build the signed release AAB
+./android/gradlew -p android clean bundleRelease
+```
+
+Output: `android/app/build/outputs/bundle/release/app-release.aab`
+
+### Signing details
+- Keystore: `android/app/upload-keystore.jks` (shared with Warm-Up-Senpai, backed up in repo)
+- Credentials: stored in `android/keystore.properties` (gitignored)
+- Alias: `upload`
+- Java version: **21** required (Capacitor 8.x targets Java 21)
+- `android/gradle.properties` sets `org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64`
+
+### Troubleshooting
+- **"invalid source release: 21"** → ensure `gradle.properties` points to Java 21
+- **NullPointerException in signReleaseBundle** → check `keystore.properties` path in `build.gradle` resolves correctly
+- **Wrong package name** → update `capacitor.config.ts` appId, `build.gradle` namespace + applicationId, `strings.xml`, and Java package directory
 
 ## Git & Commits
 

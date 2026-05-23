@@ -23,6 +23,7 @@ android/app/src/main/assets/public/
 .env
 .env.local
 *.keystore
+!careergame-backup.keystore
 keystore.properties
 signing.properties
 
