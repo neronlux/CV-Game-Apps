@@ -73,7 +73,11 @@ interface FloatingText {
   opacity: number;
 }
 
-const GameCanvas: React.FC = () => {
+interface GameCanvasProps {
+  onRegisterPause?: (pauseFn: () => void) => void;
+}
+
+const GameCanvas: React.FC<GameCanvasProps> = ({ onRegisterPause }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const lastTouchTimeRef = useRef(0);
@@ -86,6 +90,12 @@ const GameCanvas: React.FC = () => {
     }
   });
   const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (onRegisterPause) {
+      onRegisterPause(() => setIsPaused(true));
+    }
+  }, [onRegisterPause]);
 
   useEffect(() => {
     getPref(HIGH_SCORE_KEY).then((stored) => {
@@ -123,6 +133,9 @@ const GameCanvas: React.FC = () => {
     pauseBackgroundMusic,
   } = useAudio();
   const isMobile = useIsMobile();
+
+  const GROUND_OFFSET = 50;
+  const groundYRef = useRef(530);
 
   // Orientation detection
   const [isPortrait, setIsPortrait] = React.useState(false);
@@ -163,18 +176,6 @@ const GameCanvas: React.FC = () => {
     jetpackPower: 0,
     maxJetpackPower: 100,
   });
-
-  // Adjust player position for portrait mode
-  useEffect(() => {
-    if (isPortrait && canvasRef.current) {
-      const canvas = canvasRef.current;
-      playerRef.current.x = canvas.clientWidth * 0.2; // Move closer to left edge in portrait
-      playerRef.current.y = canvas.clientHeight * 0.4; // Adjust vertical position
-    } else {
-      playerRef.current.x = 150; // Default position for landscape
-      playerRef.current.y = 300;
-    }
-  }, [isPortrait]);
 
   const gameStateRef = useRef({
     speed: 2.5, // Gentler start for better learning curve
@@ -300,6 +301,7 @@ const GameCanvas: React.FC = () => {
 
       gameStateRef.current.lastFrameTime = 0;
       document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+      groundYRef.current = height - GROUND_OFFSET;
     },
     [isMobile]
   );
@@ -471,12 +473,13 @@ const GameCanvas: React.FC = () => {
     }
 
     // Add ground segments
+    const groundY = groundYRef.current;
     for (let i = 0; i < 50; i++) {
       gameStateRef.current.objects.push({
         x: i * 100,
-        y: 550,
+        y: groundY,
         width: 100,
-        height: 50,
+        height: GROUND_OFFSET,
         vx: -gameStateRef.current.speed,
         vy: 0,
         type: "ground",
@@ -2302,10 +2305,9 @@ const GameCanvas: React.FC = () => {
         // Apply velocity with delta time compensation
         player.y += player.vy * normalizedDelta;
 
-        // Ground collision - gentler
-        if (player.y + player.height > 530) {
-          // Higher ground
-          player.y = 530 - player.height;
+        const groundY = groundYRef.current;
+        if (player.y + player.height > groundY) {
+          player.y = groundY - player.height;
           player.vy = Math.min(player.vy, 0);
         }
 
@@ -2621,7 +2623,7 @@ const GameCanvas: React.FC = () => {
             if (Math.random() < 0.5) {
               gameStateRef.current.objects.push({
                 x: x + 150,
-                y: 120 + Math.random() * 300,
+                y: 80 + Math.random() * (groundYRef.current - 160),
                 width: 25,
                 height: 25,
                 vx: -gameStateRef.current.speed,
@@ -2730,7 +2732,7 @@ const GameCanvas: React.FC = () => {
 
               gameStateRef.current.objects.push({
                 x,
-                y: 120 + Math.random() * 350,
+                y: 80 + Math.random() * (groundYRef.current - 160),
                 width: size,
                 height: size,
                 vx: -gameStateRef.current.speed,
@@ -2746,7 +2748,7 @@ const GameCanvas: React.FC = () => {
               const isTicket = Math.random() < 0.15;
               gameStateRef.current.objects.push({
                 x: x + 200,
-                y: 120 + Math.random() * 300,
+                y: 80 + Math.random() * (groundYRef.current - 160),
                 width: 25,
                 height: 25,
                 vx: -gameStateRef.current.speed,
@@ -2779,7 +2781,7 @@ const GameCanvas: React.FC = () => {
 
               gameStateRef.current.objects.push({
                 x: x + 250,
-                y: 120 + Math.random() * 300,
+                y: 80 + Math.random() * (groundYRef.current - 160),
                 width: 30,
                 height: 30,
                 vx: -gameStateRef.current.speed,
@@ -2841,7 +2843,7 @@ const GameCanvas: React.FC = () => {
               color: bossData.color,
               pattern: bossData.pattern,
               x: logicalWidth + 100,
-              y: 250,
+              y: logicalHeight * 0.35,
               vx: -0.8,
               vy: 0,
               attackTimer: 0,
@@ -2876,8 +2878,8 @@ const GameCanvas: React.FC = () => {
             }
             boss.y += boss.vy * normalizedDelta;
             // Keep in bounds
-            if (boss.y < 100) boss.y = 100;
-            if (boss.y > 450) boss.y = 450;
+            if (boss.y < logicalHeight * 0.1) boss.y = logicalHeight * 0.1;
+            if (boss.y > groundYRef.current - 80) boss.y = groundYRef.current - 80;
           }
 
           // Boss shoots projectiles
@@ -3237,11 +3239,15 @@ const GameCanvas: React.FC = () => {
     const handleVisibilityChange = () => {
       gameStateRef.current.lastFrameTime = 0;
       handleMouseUp();
+      if (document.hidden && gamePhase === "playing" && !isPaused) {
+        setIsPaused(true);
+        pauseBackgroundMusic();
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [handleMouseUp]);
+  }, [handleMouseUp, gamePhase, isPaused, pauseBackgroundMusic]);
 
   return (
     <canvas

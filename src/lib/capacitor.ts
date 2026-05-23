@@ -169,3 +169,43 @@ export async function registerBackButton(handler: () => void | boolean) {
     console.warn("Back button listener failed:", e);
   }
 }
+
+export async function removeAllBackButtonListeners() {
+  if (!isNative()) return;
+  try {
+    const { App } = await import("@capacitor/app");
+    App.removeAllListeners();
+  } catch (e) {
+    console.warn("Remove back button listeners failed:", e);
+  }
+}
+
+export async function exitApp() {
+  if (!isNative()) return;
+  try {
+    const { App } = await import("@capacitor/app");
+    App.exitApp();
+  } catch (e) {
+    console.warn("Exit app failed:", e);
+  }
+}
+
+export async function keepAwake() {
+  if (!isNative()) return;
+  try {
+    const { KeepAwake } = await import("@capacitor-community/keep-awake");
+    await KeepAwake.keepAwake();
+  } catch (e) {
+    console.warn("KeepAwake enable failed:", e);
+  }
+}
+
+export async function allowSleep() {
+  if (!isNative()) return;
+  try {
+    const { KeepAwake } = await import("@capacitor-community/keep-awake");
+    await KeepAwake.allowSleep();
+  } catch (e) {
+    console.warn("KeepAwake disable failed:", e);
+  }
+}

@@ -3,7 +3,7 @@ import { useAudio } from "../lib/stores/useAudio";
 import { useGameState } from "../lib/stores/useGameState";
 import { useIsMobile } from "../hooks/use-is-mobile";
 import { useIsTablet } from "../hooks/use-is-tablet";
-import { shareText } from "../lib/capacitor";
+import { shareText, triggerImpact } from "../lib/capacitor";
 
 const GameUI: React.FC = () => {
   const { isMuted, toggleMute, volume, setVolume } = useAudio();
@@ -42,7 +42,10 @@ const GameUI: React.FC = () => {
       >
         {/* Audio Button */}
         <button
-          onClick={() => setShowAudioPanel(!showAudioPanel)}
+          onClick={() => {
+            triggerImpact("light");
+            setShowAudioPanel(!showAudioPanel);
+          }}
           className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded border border-white/20 bg-black/60 px-2 py-1 text-white transition-colors hover:bg-black/80 hover:text-yellow-400 ${isMobile || isTablet ? "text-base" : "text-sm"}`}
           aria-label="Audio Settings"
         >
@@ -60,7 +63,10 @@ const GameUI: React.FC = () => {
         {/* Share Score Button (only after game ends) */}
         {gamePhase === "ended" && (
           <button
-            onClick={handleShareScore}
+            onClick={() => {
+              triggerImpact("light");
+              handleShareScore();
+            }}
             className="pointer-events-auto min-h-[44px] rounded border border-white/20 bg-emerald-600/80 px-3 py-1 text-sm text-white hover:bg-emerald-600"
           >
             📤 Share
@@ -75,7 +81,10 @@ const GameUI: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Audio Settings</span>
               <button
-                onClick={() => setShowAudioPanel(false)}
+                onClick={() => {
+                  triggerImpact("light");
+                  setShowAudioPanel(false);
+                }}
                 className="text-white/70 hover:text-white"
               >
                 ✕
@@ -85,7 +94,10 @@ const GameUI: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300">Mute</span>
               <button
-                onClick={toggleMute}
+                onClick={() => {
+                  triggerImpact("light");
+                  toggleMute();
+                }}
                 className={`rounded px-3 py-1 text-sm ${isMuted ? "bg-red-600" : "bg-gray-700"}`}
               >
                 {isMuted ? "Unmute" : "Mute"}
@@ -117,7 +129,10 @@ const GameUI: React.FC = () => {
           className={`absolute ${isVerySmall ? "right-1 bottom-1" : "right-2 bottom-2"} pointer-events-auto`}
         >
           <button
-            onClick={() => setShowControls(!showControls)}
+            onClick={() => {
+              triggerImpact("light");
+              setShowControls(!showControls);
+            }}
             className="min-h-[44px] min-w-[44px] rounded border border-white/20 bg-black/60 p-2 text-white hover:bg-black/80"
             aria-label="Toggle controls help"
           >

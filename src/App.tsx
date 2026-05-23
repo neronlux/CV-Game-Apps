@@ -1,35 +1,57 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import GameCanvas from "./components/GameCanvas";
 import GameUI from "./components/GameUI";
-import { isNative, lockToLandscape, hideStatusBar, registerBackButton } from "./lib/capacitor";
+import {
+  isNative,
+  lockToLandscape,
+  hideStatusBar,
+  registerBackButton,
+  removeAllBackButtonListeners,
+  exitApp,
+  keepAwake,
+} from "./lib/capacitor";
 
 function App() {
-  const [isPaused, setIsPaused] = useState(false);
+  const pauseGameRef = useRef<(() => void) | null>(null);
+  const lastBackPressRef = useRef(0);
 
-  // Native initialization on mount
+  const registerPause = useCallback((pauseFn: () => void) => {
+    pauseGameRef.current = pauseFn;
+  }, []);
+
   useEffect(() => {
-    if (isNative()) {
-      // Lock to landscape as soon as the app starts
-      lockToLandscape();
-      // Hide the status bar for immersive gameplay
-      hideStatusBar();
+    if (!isNative()) return;
 
-      // Handle Android back button
-      registerBackButton(() => {
-        // If we're in a game, pause it instead of exiting
-        if (!isPaused) {
-          setIsPaused(true);
-          return; // prevent default exit
-        }
-        // If already paused, allow the system to handle exit (or we could show a confirm dialog)
-        return false;
-      });
-    }
-  }, [isPaused]);
+    lockToLandscape();
+    hideStatusBar();
+    keepAwake();
+
+    const BACK_PRESS_TIMEOUT = 2000;
+
+    registerBackButton(() => {
+      const now = Date.now();
+      const pauseFn = pauseGameRef.current;
+
+      if (pauseFn) {
+        pauseFn();
+      }
+
+      if (now - lastBackPressRef.current < BACK_PRESS_TIMEOUT) {
+        exitApp();
+        return;
+      }
+
+      lastBackPressRef.current = now;
+    });
+
+    return () => {
+      removeAllBackButtonListeners();
+    };
+  }, []);
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-slate-950">
-      <GameCanvas />
+      <GameCanvas onRegisterPause={registerPause} />
       <GameUI />
     </div>
   );
