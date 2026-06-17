@@ -32,14 +32,14 @@
     "@tailwindcss/vite": "^4.3.0",
     "clsx": "^2.1.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.2.6",
     "tailwind-merge": "^2.5.4",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
+    "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
     "@vitejs/plugin-react": "^4.7.0",
